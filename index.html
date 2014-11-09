@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Perl 入门 : Learning Perl 6">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Perl 入门</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/songzan/perl6">View on GitHub</a>
+
+          <h1 id="project_title">Perl 入门</h1>
+          <h2 id="project_tagline">Learning Perl 6</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/songzan/perl6/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/songzan/perl6/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="perl-6-的正则表达式" class="anchor" href="#perl-6-%E7%9A%84%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perl 6 的正则表达式</h1>
+
+<p>Perl 5 擅长处理文本，Perl 6 被设计用来处理语言，Perl 6 内置了许多和处理语言有关的数据类型：</p>
+
+<pre><code>Regex Match Grammar AST Macro
+</code></pre>
+
+<ul>
+<li>Regex：用于描述正则表达式。</li>
+<li>Match：用来描述匹配到的数据结构。</li>
+<li>Grammar：用来描述语言文法的一组匹配表达式。</li>
+<li>AST: 抽象语法树，解析文本语言后的数据结构。</li>
+<li>Macro: 宏，针对抽象语法树的一组方法集。</li>
+</ul>
+
+<h2>
+<a id="regex-正则表达式" class="anchor" href="#regex-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F" aria-hidden="true"><span class="octicon octicon-link"></span></a>Regex 正则表达式</h2>
+
+<p>学过 Perl 5 的人有福了，Perl 6 默认的模式就是 Perl 5 的 xms 模式.</p>
+
+<p>Perl 6 使用 ~~ 智能匹配符号来进行匹配运算：</p>
+
+<pre><code>&gt; if "string" ~~ / \w+ / { say "string match '\w+'" }
+</code></pre>
+
+<p>正则表达式有多种表示方法：</p>
+
+<pre><code>&gt; if "str" ~~ m/\w+/ { say "str match words" }
+&gt; if "str" ~~ rx/\w+/ { say "str match word" }
+&gt; if "str" ~~ m{\w+} { say "str match word" }
+&gt; if "str" ~~ m&lt;\w+&gt; { say "str match word" }
+&gt; if "str" ~~ m[\w+] { say "str match word" }
+</code></pre>
+
+<p>在 Perl 6 的正则表达式中，空格将被忽略，\s 可以代表回车, 点 . 可以代表任何字符:</p>
+
+<pre><code>&gt; if "a\nb" ~~ / ... / { say "dot could match any char" }
+&gt; if " \t\n" ~~ / ^ \s+ $ / { say '\s could match \t \n' }
+</code></pre>
+
+<p>每次匹配，Perl 6 都会将匹配结果涉及的变量保存在变量 $/ 中：</p>
+
+<pre><code>if 'abcdef' ~~ / de / {
+    # 波浪号是强制转换为字符串
+    say ~$/;          # de
+    say $/.prematch;  # abc
+    say $/.postmatch; # f
+    say $/.from;      # 3
+    say $/.to;        # 5
+};
+</code></pre>
+
+<p>Perl 6 依然使用 (..) 来进行捕获，但反向捕获的变量索引值从 0 开始：</p>
+
+<pre><code>&gt; if "hello hello" ~~ / (\w+) &lt;ws&gt; $0 / { say "match two same word" }
+</code></pre>
+
+<p>用于保存捕获值的变量现在放在了一个数组中，而不是一个个的变量中：</p>
+
+<pre><code>&gt; if "hello" ~~ / (\w+) / { say "match $/[0] }
+</code></pre>
+
+<p>Perl 5 中的以下字符集缩写依旧有效：</p>
+
+<ul>
+<li>
+<p>\d and \D</p>
+
+<p>'ab42' ~~ /\d/ and say ~$/; # 4
+'ab42' ~~ /\D/ and say ~$/; # a</p>
+</li>
+</ul>
+
+<p>Perl 6 的字符集缩写匹配的是 Unicode 范围：</p>
+
+<pre><code>"U+0035" ~~ /\d/ and say "match"; # match
+"U+07C2" ~~ /\d/ and say "match"; # match
+"U+0E53" ~~ /\d/ and say "match"; # match
+</code></pre>
+
+<ul>
+<li>
+<p>\w and \W</p>
+
+<p>"abc123ABC_" ~~ /^\w+$/ and say "match"; # match</p>
+</li>
+<li><p>\h and \H</p></li>
+<li>
+<p>\v and \V</p>
+
+<p>"U+000A" ~~ /\v/ and say "match"; # match
+"U+000B" ~~ /\v/ and say "match"; # match
+"U+000C" ~~ /\v/ and say "match"; # match
+"U+0085" ~~ /\v/ and say "match"; # match
+"U+2029" ~~ /\v/ and say "match"; # match</p>
+</li>
+<li>\n and \N</li>
+</ul>
+
+<p>\n 匹配换行符，在 Windows 系统中，同时匹配 CR LF 这两个字符。</p>
+
+<ul>
+<li>\t and \T</li>
+</ul>
+
+<p>匹配 tab (U+0009)</p>
+
+<ul>
+<li>\s and \S</li>
+</ul>
+
+<h2>
+<a id="unicde-字符集" class="anchor" href="#unicde-%E5%AD%97%E7%AC%A6%E9%9B%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>Unicde 字符集</h2>
+
+<p>&lt;:L&gt;   Letter Negation
+   &lt;:LC&gt;  Cased_Letter
+   &lt;:Lu&gt;  Uppercase_Letter
+   &lt;:Ll&gt;  Lowercase_Letter
+   &lt;:Lt&gt;  Titlecase_Letter
+   &lt;:Lm&gt;  Modifiter_Letter
+   &lt;:Lo&gt;  Other_Letter
+   &lt;:M&gt;   Mark
+   &lt;:Mn&gt;  Nonspacing_Mark
+   &lt;:Mc&gt;  Spacing_Mark
+   &lt;:Me&gt;  Enclosing_Mark
+   &lt;:N&gt;   Number
+   &lt;:Nd&gt;  Decimal_Number (also Digit)
+   &lt;:Nl&gt;  Letter_Number</p>
+
+<p>每个字符集都有相应的补集的表示方法： &lt;:!L&gt; &lt;:!LC&gt; ...</p>
+
+<p>字符集内部允许几个运算符：</p>
+
+<pre><code>+ | - &amp; ^
+</code></pre>
+
+<ul>
+<li>+ 并集 set union</li>
+<li>| 并集 set union</li>
+<li>&amp; 交集 set intersection</li>
+<li>- 补集 set difference</li>
+<li>
+<p>^ 异或 XOR 有一个就行，有两个不算</p>
+
+<p>&lt;:Ll+:Number&gt;
+&lt;+ :Lowercase_Letter + :Number&gt;</p>
+</li>
+</ul>
+
+<h3>
+<a id="用户自定义字符集-" class="anchor" href="#%E7%94%A8%E6%88%B7%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AD%97%E7%AC%A6%E9%9B%86-" aria-hidden="true"><span class="octicon octicon-link"></span></a>用户自定义字符集 &lt;[...]&gt;</h3>
+
+<pre><code>&lt;[a..c123]&gt;
+&lt;[\d] - [13579]&gt;
+&lt;[02468]&gt;
+</code></pre>
+
+<h3>
+<a id="数量限制符" class="anchor" href="#%E6%95%B0%E9%87%8F%E9%99%90%E5%88%B6%E7%AC%A6" aria-hidden="true"><span class="octicon octicon-link"></span></a>数量限制符</h3>
+
+<pre><code>+ \w+ one or more
+* \w* zero or more
+? \w? zero or one match
+**min..max \w**3..5
+**min..*  \w**4..*
+</code></pre>
+
+<h3>
+<a id="正则中的字符串" class="anchor" href="#%E6%AD%A3%E5%88%99%E4%B8%AD%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2" aria-hidden="true"><span class="octicon octicon-link"></span></a>正则中的字符串</h3>
+
+<p>如果想表示字符的字面量，不必用 \Q..\E, 就用字符串的形式：</p>
+
+<pre><code>'[[]]' ~~ / '[[]]' / and say "match"; # match
+"{()}" ~~ / "{()}" / and say "match"; # match  
+</code></pre>
+
+<h2>
+<a id="分组" class="anchor" href="#%E5%88%86%E7%BB%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>分组</h2>
+
+<p>处理括号用于捕获分组之外，还有两种不捕获分组的写法：</p>
+
+<pre><code>/ f[oo]* / # will match "f", "foo", "foooo"
+/ f'oo'* / # same as up
+/ f"oo"* / # same as up
+</code></pre>
+
+<h3>
+<a id="分支和结合-alternation-and-conjunction" class="anchor" href="#%E5%88%86%E6%94%AF%E5%92%8C%E7%BB%93%E5%90%88-alternation-and-conjunction" aria-hidden="true"><span class="octicon octicon-link"></span></a>分支和结合 Alternation and Conjunction</h3>
+
+<pre><code>/f|fo|foo/ 将尝试匹配最长的记录
+/f||fo||foo/
+/&lt;[a..z]&gt;+ &amp; [...]/
+/&lt;[a..z]&gt;+ &amp;&amp; [...]/
+</code></pre>
+
+<h3>
+<a id="零宽断言" class="anchor" href="#%E9%9B%B6%E5%AE%BD%E6%96%AD%E8%A8%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>零宽断言</h3>
+
+<pre><code>^   匹配字符串的开始
+^^  匹配字符串行首
+$   匹配字符串的结束
+$$  匹配字符串的行尾
+&lt;&lt;  匹配单词左边界
+&gt;&gt;  匹配单词的右边界
+</code></pre>
+
+<h3>
+<a id="变量内插" class="anchor" href="#%E5%8F%98%E9%87%8F%E5%86%85%E6%8F%92" aria-hidden="true"><span class="octicon octicon-link"></span></a>变量内插</h3>
+
+<p>Perl 6 的变量内插让字符串转换成正则表达式成为泡影：</p>
+
+<pre><code> my $foo = "ab*c";
+ my @bar = &lt;one two three&gt;;
+
+ /$foo @bar/ exactly as: /'ab*c' [one|two|three]/
+</code></pre>
+
+<h3>
+<a id="正则表达式修饰" class="anchor" href="#%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%BF%AE%E9%A5%B0" aria-hidden="true"><span class="octicon octicon-link"></span></a>正则表达式修饰</h3>
+
+<pre><code>$foo ~~ m :i/ foo / # will match "foo" 'FOO'
+$foo ~~ m :P5/[a-z]/ # use perl5 regex syntax
+$foo ~~ m :g/ foo / # matches as many as possible
+$foo ~~ m :s/ foo / # pattern whitespace is valid
+$foo ~~ m :ratchet/foo|ddd/ # dont do any backtracking
+m:pos($p)/ pattern /  # match at position $p
+</code></pre>
+
+<p>还有其他的修饰：</p>
+
+<pre><code>:basechar  Ignore accents and other marks
+:continue  Continue mathing from where previous match
+:byte      dot mathes bytes
+:codes     dot matchs codepoints
+:chars     dot matches "characters" at current
+</code></pre>
+
+<p>还有匹配具体位置的修饰符：</p>
+
+<pre><code>$_ = "foo bar baz blat";
+m :3x/ a / # matches the "a" characters in each word
+m :nth(3)/\w+ / # matches "baz"
+</code></pre>
+
+<p>修饰符也可以放在表达式内部的分组前：</p>
+
+<pre><code>/ a [ :i foo ] z/ # matches "afooz", "aFooz",...
+</code></pre>
+
+<p>修饰符 :sigspace 非常有用，表达式的空格表示 \s+</p>
+
+<pre><code>m:sigspace/One small step/ == /\s*One\s+small\s+step\s*/
+mm/One small step/ is as below
+</code></pre>
+
+<h3>
+<a id="自定义字符集" class="anchor" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AD%97%E7%AC%A6%E9%9B%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>自定义字符集</h3>
+
+<pre><code>my regex identifier { \w+ }
+/ &lt;identifier&gt; / &lt;==&gt; / \w+ /
+</code></pre>
+
+<h2>
+<a id="预定义的字符集" class="anchor" href="#%E9%A2%84%E5%AE%9A%E4%B9%89%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>预定义的字符集</h2>
+
+<pre><code>&lt;alpha&gt;  表示是一个字母的字母集合
+&lt;digit&gt;  表示是一个数字
+&lt;ident&gt;  一个标识符
+&lt;sp&gt;     一个空格字符
+&lt;ws&gt;     an arbitrary amount of whitespace
+&lt;dot&gt;    a period (same as '.')
+&lt;lt&gt;     a less-than character same as '&gt;'
+&lt;gt&gt;     a greater-than character (same as '&gt;')
+&lt;null&gt;   matches nothing (useful in alternations that may be empty)
+</code></pre>
+
+<p>向前看和向后看 (look ahead and look behind)</p>
+
+<pre><code>&lt;before ...&gt;   零宽前瞻 ...
+&lt;after  ...&gt;   零宽后顾 ...
+
+/ foo &lt;before \d+&gt; / # 明明是前面匹配，为什么放后面
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Perl 入门 maintained by <a href="https://github.com/songzan">songzan</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
