@@ -39,9 +39,92 @@
         </div>
 
         <h1>
-<a id="perl-6-的正则表达式" class="anchor" href="#perl-6-%E7%9A%84%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perl 6 的正则表达式</h1>
+<a id="perl-6-中文教程" class="anchor" href="#perl-6-%E4%B8%AD%E6%96%87%E6%95%99%E7%A8%8B" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perl 6 中文教程</h1>
 
-<p>Perl 5 擅长处理文本，Perl 6 被设计用来处理语言，Perl 6 内置了许多和处理语言有关的数据类型：</p>
+<p>Perl 5 擅长处理文本，Perl 6 被设计用来处理语言。</p>
+
+<p>Perl 6 和 Perl 5 很相似，但也有一些不同：</p>
+
+<p>Perl5 这么写：</p>
+
+<pre><code>my @fruits = ("apple", "pear", "banana");
+print $fruit[0], "\n";
+</code></pre>
+
+<p>Perl6 这么写：</p>
+
+<pre><code>my @fruits = "apple", "pear", "banana";
+say @fruit[0];
+</code></pre>
+
+<p>Perl6 用 <code>&lt;&gt;</code> 来代替了 Perl6 的 <code>qw()</code>:</p>
+
+<pre><code>my @fruits = &lt;apple pear banana&gt;;
+</code></pre>
+
+<p>获取一个数组或散列单个的元素改变成用 <code>@</code>, <code>%</code>, 而不是用 <code>$</code>;
+你也可以用另外一种更容易理解的方式想：变量的前置符号已经
+是变量的一部分了。所以它在加下标时不会改变。</p>
+
+<p>变量前缀符在变量声明时，可以给解释器一个信息，初始化为相应的数据结构。</p>
+
+<pre><code>my @array-data;
+my $scalar-data;
+my %hash-data;
+</code></pre>
+
+<h3>
+<a id="哈希的键不再自动引起" class="anchor" href="#%E5%93%88%E5%B8%8C%E7%9A%84%E9%94%AE%E4%B8%8D%E5%86%8D%E8%87%AA%E5%8A%A8%E5%BC%95%E8%B5%B7" aria-hidden="true"><span class="octicon octicon-link"></span></a>哈希的键不再自动引起</h3>
+
+<p>哈希的索引键值不再自动引起：</p>
+
+<pre><code>Perl5:    $days{February}
+Perl6:    %days{'February'}
+  或:     %days&lt;February&gt;
+  或:     %days&lt;&lt;February&gt;&gt;
+</code></pre>
+
+<p>哈希依旧使用大括号，但大括号内的写法更加严格，只要是返回 <code>"February"</code>
+的写法都可以。除非用 &lt;&gt; 和 &lt;&lt;&gt;&gt; 这种形式来自动获取元素。</p>
+
+<h3>
+<a id="全局变量有一个命名标志" class="anchor" href="#%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E6%9C%89%E4%B8%80%E4%B8%AA%E5%91%BD%E5%90%8D%E6%A0%87%E5%BF%97" aria-hidden="true"><span class="octicon octicon-link"></span></a>全局变量有一个命名标志</h3>
+
+<p>是的，变量名的第二个字符如果是 <code>*</code>, 那么这是一个全局变量：</p>
+
+<pre><code>Perl5:    $ENV{FOO}
+Perl6:    %*ENV&lt;FOO&gt;
+</code></pre>
+
+<h3>
+<a id="命令行参数-command-line-arguments" class="anchor" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0-command-line-arguments" aria-hidden="true"><span class="octicon octicon-link"></span></a>命令行参数 Command-line arguments</h3>
+
+<p>命令行的参数现在保存在名为 <code>@*ARGS</code> 中，而不是 <code>@ARGV</code>. 
+由于 <code>*</code> 的存在，所以这是一个全局变量。</p>
+
+<h3>
+<a id="关于数组或散列元素的新的写法" class="anchor" href="#%E5%85%B3%E4%BA%8E%E6%95%B0%E7%BB%84%E6%88%96%E6%95%A3%E5%88%97%E5%85%83%E7%B4%A0%E7%9A%84%E6%96%B0%E7%9A%84%E5%86%99%E6%B3%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>关于数组或散列元素的新的写法</h3>
+
+<p>数组的元素个数：</p>
+
+<pre><code>Perl5:    $#array+1 or scalar(@array)
+Perl6:    @array.elems
+</code></pre>
+
+<p>数组的最后一个元素:</p>
+
+<pre><code>Perl5:    $#array
+Perl6:    @array.end
+</code></pre>
+
+<p>因此，数组的最后一个元素可以这样写：</p>
+
+<pre><code>Perl5:    $array[$#array]
+Perl6:    @array[@array.end]
+         @array[*-1]
+</code></pre>
+
+<p>Perl 6 内置了许多和处理语言有关的数据类型：</p>
 
 <pre><code>Regex Match Grammar AST Macro
 </code></pre>
