@@ -209,3 +209,149 @@ if $contents ~~ /<section>*/ {
 say %config.perl;
 # ("passwords" => {"jack" => "password1", "joy" => "muchmoresecure123"},
 #    "quotas" => {"jack" => "123", "joy" => "42"}).hash
+
+# 匹配的另外一种写法，看起来更好
+# 尤其是动态生成的正则表达式
+
+my $regex = /../;           # 定义
+if 'abc'.match($regex) {    # 匹配
+    say "'abc' has at least two characters";
+}
+
+# 正则限定词
+
+# 正则限定词 Adverbs 改变正则表达式的许多默认行为
+
+# :i 忽略大小写 :ignorecase 的缩写
+
+say so 'a' ~~ /A/; # Flase
+say so 'a' ~~ /:i A/; # True
+say so 'a' ~~ m:i/A/; # True
+
+# output:
+#     ba
+#     aA
+
+# 这两种写法是相同的
+
+my $rx1 = rx:i/a/;      # 表达式前面的写法
+my $rx2 = rx/:i a/;     # 在表达式内部的写法
+
+# 这两个不同
+
+my $rx3 = rx/a :i b/;   # 匹配只忽略 b 的大小写
+my $rx4 = rx/:i a b/;   # 匹配所有的内容都忽略大小写
+
+# 分组中的限定词只作用域分组内部
+
+my $rx5 = rx/ (:i a b) c /;   # 只匹配 'ABc' 但不匹配 'ABC'
+my $rx6 = rx/ [:i a b] c /;   # 匹配 'ABc' 但不匹配 'ABC'
+
+# :r 禁止回溯 :ratchet 的缩写
+# 回溯会严重降低匹配的效率，一个依靠回溯的匹配总是
+# 可以优化成不需要回溯的匹配，从而提高效率
+
+say so 'abc' ~~ / \w+ . /;  # True
+say so 'abc' ~~ / :r \w+ ./; # False
+
+# :r 模式如此有用，Perl6 专门定义了一个关键字来声明它
+# regex token rule 的命名规则，不能有减号
+my token thing1 { ... };
+# 相当于 
+my regex thing2 { :r ... };
+
+# 空格恢复 :s or :sigspace 
+
+# :s 模式让正则表达式中的空格成为匹配自身的符号
+
+say so "I used Photoshop " ~~ m:i/ photo shop /; # True
+say so "I used Photoshop " ~~ m:i:s/ photo shop /; # False
+say so "I used photo shop " ~~ m:i:s/ photo shop /; # True
+
+# 关键字 rule 的默认行为相当于 { :r :s ... }
+# 用空格代表一个以上的空格
+
+if "a  b" ~~ m:s/a b/ {
+    say '"a  b" match m:s/a b/';
+}
+
+if "a  b" ~~ /a <.ws> b/ {
+    say '"a  b" match /a <.ws> b/';
+}
+
+# 指定匹配位置 :c or :continue
+# 默认匹配是从字符串的开始进行的，但 :c 改变了这个行为
+
+given 'a1xa2' {
+    say ~m/a./;         # a1
+    say ~m:c(2)/a./;    # a2
+}
+
+# 书写 regex 的建议
+# 1. 尽量用空格增加可读性
+
+# 可读性差的写法
+my regex float { <[+-]>?\d*'.'\d+[e<[+-]>?\d+]? };
+
+# 可读性好的写法
+my regex float {
+    <[+-]>?     # optional sign
+    \d*         # leading digits, optional
+    '.'
+    \d+
+    [           # optional exponent
+        e <[+-]>?  \d+
+    ]?
+}
+
+# 更好的写法
+
+my token sign { <[+-]> }
+my token decimal { \d+ }
+my token exponent { 'e' <sign>? <decimal> }
+my regex float {
+    <sign>?
+    <decimal>?
+    '.'
+    <decimal>
+    <exponent>?
+}
+
+# 扩展写法变得容易
+
+my regex float {
+    <sign>?
+    [
+    || <decimal>?  '.' <decimal> <exponent>?
+    || <decimal> <exponent>
+    ]
+}
+
+# 解析 ini 的新的写法
+
+grammar IniFormat {
+    token ws { <!ww> \h* }
+    rule header { '[' (\w+) ']' \n+ }
+    token identifier  { \w+ }
+    rule kvpair { \s* <key=identifier> '=' <value=identifier> \n+ }
+    token section {
+        <header>
+        <kvpair>*
+    }
+}
+
+    token TOP {
+        <section>*
+    }
+}
+
+my $contents = q:to/EOI/;
+    [passwords]
+        jack = password1
+        joy = muchmoresecure123
+    [quotas]
+        jack = 123
+        joy = 42
+EOI
+say so IniFormat.parse($contents);
+
